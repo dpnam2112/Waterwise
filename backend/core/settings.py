@@ -1,7 +1,8 @@
 import os
 from typing import Literal
 
-from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class CoreSettings(BaseSettings):
@@ -25,17 +26,29 @@ class DatabaseSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     REDIS_URL: str = "redis://127.0.0.1:6379/0"
 
+class GoogleSettings(BaseSettings):
+    model_config =  SettingsConfigDict(extra='ignore')
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+    GOOGLE_CALLBACK_URI: str = "http://localhost:8080/v1/auth/google/callback"
+
+    GOOGLE_API_BASE_URI: str = "https://www.googleapis.com"
+    GOOGLE_PEOPLE_API_BASE_URI: str = "https://www.people.googleapis.com"
+    GOOGLE_AUTH_URL: str = "https://accounts.google.com/o/oauth2/v2/auth"
+    GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
+    GOOGLE_SCOPES: list[str] = ["openid", "email", "profile"]
 
 class Settings(
     CoreSettings,
     TestSettings,
     DatabaseSettings,
     RedisSettings,
+    GoogleSettings
 ): ...
 
 
 class DevelopmentSettings(Settings): ...
-
 
 class ProductionSettings(Settings):
     DEBUG: bool = False
