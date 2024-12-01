@@ -1,8 +1,6 @@
 from fastapi import APIRouter
+from .google import router as google_router
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-
-@router.get("/login")
-def login():
-    return {"status": "ok"}
+router.include_router(google_router)

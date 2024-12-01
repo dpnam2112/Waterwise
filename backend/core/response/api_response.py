@@ -6,11 +6,10 @@ T = TypeVar("T")
 
 
 class Ok(BaseModel, Generic[T]):
-    status: str = "success"
     data: T
 
     def __init__(self, data: T):
-        super().__init__(data=data)
+        super().__init__(status="success", data=data)
 
     @staticmethod
     def format(data):
