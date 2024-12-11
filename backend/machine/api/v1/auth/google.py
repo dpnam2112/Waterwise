@@ -1,8 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
+from machine.api.v1.deps import AuthControllerDep
 from machine.clients.google import GoogleOAuthClient
 from machine.clients.injectors import get_google_oauth_client
 from core.response import Ok
+from machine.schemas.models.v1.token import TokenPair
 
 router = APIRouter(prefix="/google", tags=["auth"])
 
@@ -22,9 +24,10 @@ async def google_login(
     return Ok(data=oauth_client.redirect_auth_url)
 
 
-@router.get("/callback")
+@router.get("/callback", response_model=TokenPair)
 async def google_callback(
-    code: str, oauth_client: GoogleOAuthClient = Depends(get_google_oauth_client)
+    code: str,
+    auth_controller: AuthControllerDep
 ):
     """
     Handles the OAuth callback from Google.
@@ -36,9 +39,4 @@ async def google_callback(
     Returns:
         dict: User info retrieved from Google.
     """
-    token_data = await oauth_client.exchange_code_for_token(code=code)
-    access_token = token_data.get("access_token")
-    if not access_token:
-        raise HTTPException(status_code=400, detail="Access token not found in response")
-    user_info = await oauth_client.fetch_user_info(access_token=access_token)
-    return {"user": user_info}
+    return await auth_controller.google_callback(code)
